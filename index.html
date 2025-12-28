@@ -20,7 +20,6 @@
             position: relative;
             max-width: 100%;
             margin: 0 auto;
-            /* overflow: hidden; Removed to allow absolute positioning of selection box easily if needed, but handled by relative positioning */
             overflow: hidden; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             border-radius: 0.5rem;
@@ -29,7 +28,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Prevent touch scrolling while drawing */
             touch-action: none; 
         }
         canvas {
@@ -38,13 +36,16 @@
             display: block;
             z-index: 10;
         }
+        video {
+            display: none; /* Hide the source video element */
+        }
         
         /* Selection Box for Manual Mode */
         #selectionBox {
             position: absolute;
             border: 2px dashed #facc15; /* Yellow-400 */
             background-color: rgba(250, 204, 21, 0.2);
-            pointer-events: none; /* Let clicks pass through to canvas logic */
+            pointer-events: none; 
             display: none;
             z-index: 20;
         }
@@ -67,7 +68,7 @@
 <body class="text-gray-800 min-h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="bg-blue-600 text-white p-4 shadow-md">
+    <header class="bg-blue-600 text-white p-4 shadow-md relative z-10">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,19 +83,58 @@
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 md:p-6 max-w-4xl">
 
-        <!-- App Description -->
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded shadow-sm text-sm">
-            <h2 class="font-bold text-blue-700 mb-2 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                </svg>
-                このアプリについて
-            </h2>
-            <ul class="list-disc list-inside space-y-1 text-gray-700 ml-1">
-                <li><strong>🔒 安心のプライバシー保護:</strong> 画像はサーバーに送信されず、すべてお使いのブラウザ内で安全に処理されます。</li>
-                <li><strong>🤖 AI自動検出:</strong> 「顔にモザイクをかける」ボタンを押すだけで、AIが高精度に顔を認識・加工します。</li>
-                <li><strong>✍️ 手動補正モード:</strong> AIが見逃した顔や、隠したい背景の映り込みなどは、手動でなぞって隠せます。</li>
-            </ul>
+        <!-- Hero / Intro Section -->
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-500 text-white p-6 md:p-8 rounded-xl shadow-lg mb-8 overflow-hidden relative">
+            <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10"></div>
+            <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-40 h-40 rounded-full bg-white opacity-10"></div>
+
+            <div class="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                <div class="flex-1 text-center md:text-left">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-3">その写真、<br>そのままアップして大丈夫？</h2>
+                    <p class="text-blue-100 text-base md:text-lg mb-6 leading-relaxed">
+                        AIが自動で顔を検出してモザイク処理。<br>
+                        面倒な作業はすべてアプリにおまかせ。<br>
+                        <span class="text-yellow-300 font-bold text-sm mt-2 block">🔒 画像はサーバーに送信されません</span>
+                    </p>
+                    <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+                        <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-bold backdrop-blur-sm">🚀 超高精度AI</span>
+                        <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-bold backdrop-blur-sm">✍️ 手動補正OK</span>
+                        <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-bold backdrop-blur-sm opacity-80">🎥 動画も対応(Beta)</span>
+                    </div>
+                </div>
+                
+                <!-- SVG Illustration -->
+                <div class="flex-shrink-0 transform hover:scale-105 transition-transform duration-300">
+                    <svg id="heroSvg" width="220" height="180" viewBox="0 0 220 180" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-2xl">
+                        <rect x="20" y="20" width="180" height="140" rx="12" fill="white" />
+                        <rect x="30" y="30" width="160" height="100" rx="4" fill="#E2E8F0" />
+                        <path d="M50 110 L70 80 L90 110" fill="#CBD5E1" />
+                        <path d="M80 110 L100 70 L130 110" fill="#94A3B8" />
+                        
+                        <!-- Mosaiced Face -->
+                        <circle cx="150" cy="80" r="15" fill="#FCA5A5" />
+                        <g>
+                            <rect x="135" y="65" width="10" height="10" fill="#3B82F6" opacity="0.9"/>
+                            <rect x="145" y="65" width="10" height="10" fill="#60A5FA" opacity="0.8"/>
+                            <rect x="155" y="65" width="10" height="10" fill="#2563EB" opacity="0.9"/>
+                            <rect x="135" y="75" width="10" height="10" fill="#93C5FD" opacity="0.8"/>
+                            <rect x="145" y="75" width="10" height="10" fill="#1D4ED8" opacity="0.9"/>
+                            <rect x="155" y="75" width="10" height="10" fill="#60A5FA" opacity="0.8"/>
+                            <rect x="135" y="85" width="10" height="10" fill="#3B82F6" opacity="0.9"/>
+                            <rect x="145" y="85" width="10" height="10" fill="#2563EB" opacity="0.8"/>
+                            <rect x="155" y="85" width="10" height="10" fill="#93C5FD" opacity="0.9"/>
+                        </g>
+
+                        <!-- Scan Line -->
+                        <rect x="30" y="30" width="2" height="100" fill="#FACC15" opacity="0.8">
+                            <animate attributeName="x" from="30" to="190" dur="2s" repeatCount="indefinite" />
+                        </rect>
+                        
+                        <rect x="30" y="140" width="80" height="10" rx="5" fill="#3B82F6" />
+                        <rect x="120" y="140" width="70" height="10" rx="5" fill="#10B981" />
+                    </svg>
+                </div>
+            </div>
         </div>
         
         <!-- Controls Area -->
@@ -102,33 +142,50 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <!-- File Input -->
                 <div class="relative">
-                    <label for="imageUpload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <label for="mediaUpload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
                             <svg class="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">クリックして写真をアップロード</span></p>
-                            <p class="text-xs text-gray-500">PNG, JPG (最大 5MB)</p>
+                            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold text-lg">写真を選択</span> <span class="text-xs text-gray-400 ml-1">（※動画も可）</span></p>
+                            <p class="text-xs text-gray-500">PNG, JPG (動画: MP4, WEBM)</p>
                         </div>
-                        <input id="imageUpload" type="file" class="hidden" accept="image/png, image/jpeg, image/jpg" />
+                        <input id="mediaUpload" type="file" class="hidden" accept="image/png, image/jpeg, image/jpg, video/mp4, video/webm, video/mov" />
                     </label>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="flex flex-col justify-center gap-3">
-                    <button id="mosaicBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                        </svg>
-                        顔にモザイクをかける
-                    </button>
                     
-                    <!-- Manual Mode Toggle -->
-                    <button id="manualModeBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                        手動でモザイク追加
-                    </button>
+                    <!-- Image Mode Buttons -->
+                    <div id="imageControls" class="flex flex-col gap-3">
+                        <button id="mosaicBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            顔にモザイクをかける
+                        </button>
+                        <button id="manualModeBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                            手動でモザイク追加
+                        </button>
+                    </div>
 
+                    <!-- Video Mode Buttons (Hidden by default) -->
+                    <div id="videoControls" class="flex flex-col gap-3 hidden">
+                        <button id="startVideoBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            動画処理を開始 (Beta機能)
+                        </button>
+                        <div class="text-xs text-gray-500 text-center">
+                            ※動画機能はベータ版です。<br>PC環境での利用を推奨します。
+                        </div>
+                    </div>
+
+                    <!-- Shared Buttons -->
                     <div class="flex gap-2">
                         <button id="downloadBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -149,7 +206,7 @@
             
             <!-- Manual Mode Instructions -->
             <div id="manualInstructions" class="hidden p-3 bg-orange-50 text-orange-800 border border-orange-200 rounded-lg text-sm text-center">
-                <span class="font-bold">手動モードON:</span> 写真の上でドラッグして、モザイクをかけたい範囲を選択してください。
+                <span class="font-bold">手動モードON:</span> 画像の上でドラッグして、モザイクをかけたい範囲を選択してください。
             </div>
 
         </div>
@@ -163,7 +220,20 @@
                 </svg>
                 ここに写真が表示されます
             </div>
+            <!-- Video element (hidden, used for processing) -->
+            <video id="sourceVideo" playsinline muted crossOrigin="anonymous"></video>
             <!-- Canvas will be inserted here by JS -->
+        </div>
+
+        <!-- Promo Image Generation Area -->
+        <div class="mt-8 text-center border-t border-gray-300 pt-8 pb-4">
+            <p class="text-sm text-gray-500 mb-2">SNSやブログでの紹介用に</p>
+            <button id="promoBtn" class="text-blue-600 hover:text-blue-800 text-sm font-bold flex items-center justify-center gap-1 mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                紹介用画像をダウンロード (OGPサイズ)
+            </button>
         </div>
 
     </main>
@@ -184,9 +254,22 @@
         // --- Configuration & State ---
         const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
         let isModelLoaded = false;
+        
+        // Media State
+        let currentMediaType = null; // 'image' or 'video'
         let originalImage = null; 
+        let videoElement = document.getElementById('sourceVideo');
+        
+        // Canvas & Context
         let canvas = document.createElement('canvas'); 
         let ctx = canvas.getContext('2d');
+        
+        // Video Processing State
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let isVideoProcessing = false;
+        let detectionInterval = null;
+        let lastDetections = []; // To keep mosaic stable if detection skips frames
 
         // Manual Mode State
         let isManualMode = false;
@@ -195,11 +278,16 @@
         let startY = 0;
 
         // --- DOM Elements ---
-        const imageUpload = document.getElementById('imageUpload');
+        const mediaUpload = document.getElementById('mediaUpload');
         const mosaicBtn = document.getElementById('mosaicBtn');
         const manualModeBtn = document.getElementById('manualModeBtn');
+        const startVideoBtn = document.getElementById('startVideoBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const resetBtn = document.getElementById('resetBtn');
+        
+        const imageControls = document.getElementById('imageControls');
+        const videoControls = document.getElementById('videoControls');
+        
         const canvasContainer = document.getElementById('canvasContainer');
         const selectionBox = document.getElementById('selectionBox');
         const placeholderText = document.getElementById('placeholderText');
@@ -208,13 +296,13 @@
         const manualInstructions = document.getElementById('manualInstructions');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingText = document.getElementById('loadingText');
+        const promoBtn = document.getElementById('promoBtn');
 
         // --- Initialization ---
         
         async function loadModels() {
             try {
-                // Switching to SSD MobileNet V1 for better accuracy
-                // AND FaceLandmark68Net to reduce false positives
+                // Load High Precision Models
                 await Promise.all([
                     faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
                     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
@@ -225,10 +313,7 @@
                 modelStatus.classList.remove('bg-blue-700', 'animate-pulse');
                 modelStatus.classList.add('bg-green-500');
                 
-                if (originalImage) {
-                    mosaicBtn.disabled = false;
-                    manualModeBtn.disabled = false;
-                }
+                updateButtonStates();
             } catch (error) {
                 console.error("Model loading failed:", error);
                 modelStatus.textContent = "AIモデル読込エラー";
@@ -242,42 +327,48 @@
 
         // --- Event Listeners ---
 
-        imageUpload.addEventListener('change', handleImageUpload);
+        mediaUpload.addEventListener('change', handleMediaUpload);
         
         mosaicBtn.addEventListener('click', async () => {
-            if (!originalImage) return;
-            // Turn off manual mode if on
+            if (currentMediaType !== 'image') return;
             if (isManualMode) toggleManualMode();
-            await detectAndMosaicFaces();
+            await detectAndMosaicImage();
         });
+        
+        startVideoBtn.addEventListener('click', startVideoProcessing);
 
         manualModeBtn.addEventListener('click', toggleManualMode);
 
         downloadBtn.addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = 'mosaic_photo_' + new Date().getTime() + '.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        });
-
-        resetBtn.addEventListener('click', () => {
-            if (originalImage) {
-                drawImageToCanvas(originalImage);
-                statusMessage.classList.add('hidden');
-                downloadBtn.disabled = true;
-                if (isManualMode) toggleManualMode(); // Reset manual mode
+            if (currentMediaType === 'image') {
+                const link = document.createElement('a');
+                link.download = 'mosaic_photo_' + new Date().getTime() + '.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            } else if (currentMediaType === 'video') {
+                // If video is done processing, we have a Blob URL in the button logic or stored
+                // Actually, logic is handled in stopVideoProcessing
+                if (videoDownloadUrl) {
+                    const link = document.createElement('a');
+                    link.download = 'mosaic_video_' + new Date().getTime() + '.webm';
+                    link.href = videoDownloadUrl;
+                    link.click();
+                }
             }
         });
+        
+        let videoDownloadUrl = null;
+
+        resetBtn.addEventListener('click', resetApp);
+
+        promoBtn.addEventListener('click', generatePromoImage);
 
         // Canvas Interaction Listeners (for Manual Mode)
-        // Note: We attach to canvasContainer to handle drags starting slightly outside or inside safely
         canvasContainer.addEventListener('mousedown', startSelection);
         canvasContainer.addEventListener('mousemove', updateSelection);
-        window.addEventListener('mouseup', endSelection); // Catch release anywhere
-        
-        // Touch support
+        window.addEventListener('mouseup', endSelection); 
         canvasContainer.addEventListener('touchstart', (e) => {
-            if(isManualMode) e.preventDefault(); // Prevent scroll
+            if(isManualMode) e.preventDefault(); 
             startSelection(e);
         }, {passive: false});
         canvasContainer.addEventListener('touchmove', (e) => {
@@ -286,11 +377,50 @@
         }, {passive: false});
         window.addEventListener('touchend', endSelection);
 
-        // --- Core Functions ---
+        // --- Media Handling ---
 
-        function handleImageUpload(e) {
+        function resetApp() {
+            // Clean up
+            if (videoElement.src) URL.revokeObjectURL(videoElement.src);
+            if (videoDownloadUrl) URL.revokeObjectURL(videoDownloadUrl);
+            
+            originalImage = null;
+            currentMediaType = null;
+            videoDownloadUrl = null;
+            
+            // UI Reset
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.remove();
+            placeholderText.style.display = 'block';
+            imageControls.classList.remove('hidden');
+            videoControls.classList.add('hidden');
+            
+            downloadBtn.disabled = true;
+            statusMessage.classList.add('hidden');
+            
+            if (isManualMode) toggleManualMode();
+            mediaUpload.value = ''; // Allow re-uploading same file
+        }
+
+        function handleMediaUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
+
+            resetApp(); // Clear previous state
+            
+            if (file.type.startsWith('video/')) {
+                handleVideoUpload(file);
+            } else {
+                handleImageUpload(file);
+            }
+        }
+
+        // --- Image Logic ---
+
+        function handleImageUpload(file) {
+            currentMediaType = 'image';
+            imageControls.classList.remove('hidden');
+            videoControls.classList.add('hidden');
 
             showLoading(true, "画像を読み込み中...");
 
@@ -300,28 +430,8 @@
                 img.onload = () => {
                     originalImage = img;
                     drawImageToCanvas(img);
-                    
-                    placeholderText.style.display = 'none';
-                    if (!canvasContainer.contains(canvas)) {
-                        canvasContainer.innerHTML = '';
-                        canvasContainer.appendChild(selectionBox); // Re-append selection box
-                        canvasContainer.appendChild(canvas);
-                    } else {
-                        // Ensure selection box is on top logic if DOM changed? 
-                        // Actually just clearing container wipes it, so code above is correct.
-                        canvasContainer.innerHTML = '';
-                        canvasContainer.appendChild(selectionBox);
-                        canvasContainer.appendChild(canvas);
-                    }
-
-                    if (isModelLoaded) {
-                        mosaicBtn.disabled = false;
-                        manualModeBtn.disabled = false;
-                    }
-                    downloadBtn.disabled = true;
-                    statusMessage.classList.add('hidden');
-                    if (isManualMode) toggleManualMode();
-                    
+                    setupCanvasInDOM();
+                    updateButtonStates();
                     showLoading(false);
                 };
                 img.src = event.target.result;
@@ -329,16 +439,257 @@
             reader.readAsDataURL(file);
         }
 
+        async function detectAndMosaicImage() {
+            if (!isModelLoaded) return;
+            showLoading(true, "顔を検出してモザイク処理中...");
+            try {
+                // High Accuracy Mode with Lower Threshold for Crowd Detection
+                // minConfidence 0.5 -> 0.25 to detect smaller/obscured faces
+                const results = await faceapi.detectAllFaces(
+                    canvas, 
+                    new faceapi.SsdMobilenetv1Options({ minConfidence: 0.25 })
+                ).withFaceLandmarks();
+
+                if (results.length === 0) {
+                    showStatus("顔が検出されませんでした。手動モードを試してください。", "warning");
+                } else {
+                    results.forEach(result => {
+                        const { x, y, width, height } = result.detection.box;
+                        applyMosaic(ctx, x, y, width, height, canvas);
+                    });
+                    showStatus(`${results.length} 人の顔にモザイクをかけました！`, "success");
+                    downloadBtn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                showStatus("処理中にエラーが発生しました。", "error");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // --- Video Logic ---
+
+        function handleVideoUpload(file) {
+            currentMediaType = 'video';
+            imageControls.classList.add('hidden');
+            videoControls.classList.remove('hidden');
+            
+            const url = URL.createObjectURL(file);
+            videoElement.src = url;
+            
+            videoElement.onloadedmetadata = () => {
+                // Setup canvas size to match video
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                
+                // Draw first frame (optional, might be black)
+                // Need to seek to a frame to show thumbnail?
+                videoElement.currentTime = 0.1;
+            };
+            
+            videoElement.onseeked = () => {
+                ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                setupCanvasInDOM();
+                updateButtonStates();
+            };
+        }
+
+        async function startVideoProcessing() {
+            if (!isModelLoaded) return;
+            
+            startVideoBtn.disabled = true;
+            isVideoProcessing = true;
+            recordedChunks = [];
+            lastDetections = [];
+            
+            showStatus("動画を処理中... 再生が終わるまでお待ちください", "info");
+            
+            // Setup MediaRecorder
+            const canvasStream = canvas.captureStream(30); // Capture at 30 FPS
+            
+            // Try to capture audio from video element if supported
+            let audioTrack = null;
+            if (videoElement.captureStream) {
+                const videoStream = videoElement.captureStream();
+                const audioTracks = videoStream.getAudioTracks();
+                if (audioTracks.length > 0) {
+                    audioTrack = audioTracks[0];
+                    canvasStream.addTrack(audioTrack);
+                }
+            } else if (videoElement.mozCaptureStream) {
+                 const videoStream = videoElement.mozCaptureStream();
+                 const audioTracks = videoStream.getAudioTracks();
+                 if (audioTracks.length > 0) {
+                    audioTrack = audioTracks[0];
+                    canvasStream.addTrack(audioTrack);
+                }
+            }
+
+            // Mime type selection & High Bitrate Settings
+            let mimeType = 'video/webm; codecs=vp9';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = 'video/webm'; // Fallback
+            }
+
+            const recorderOptions = {
+                mimeType: mimeType,
+                videoBitsPerSecond: 8000000 // 8Mbps for high quality (Standard is usually much lower)
+            };
+
+            try {
+                mediaRecorder = new MediaRecorder(canvasStream, recorderOptions);
+            } catch (e) {
+                console.error("MediaRecorder error", e);
+                // Fallback without bitrate if it fails (Safari sometimes is picky)
+                try {
+                    mediaRecorder = new MediaRecorder(canvasStream);
+                } catch (e2) {
+                    showStatus("このブラウザは動画録画に対応していない可能性があります。", "error");
+                    startVideoBtn.disabled = false;
+                    return;
+                }
+            }
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                videoDownloadUrl = URL.createObjectURL(blob);
+                downloadBtn.disabled = false;
+                showStatus("動画処理が完了しました！「保存」ボタンでダウンロードできます。", "success");
+                startVideoBtn.disabled = false;
+                startVideoBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    もう一度処理する
+                `;
+                isVideoProcessing = false;
+            };
+
+            // Start everything
+            mediaRecorder.start();
+            videoElement.currentTime = 0;
+            // Unmute for capture if user wants audio in recording? 
+            // Browsers usually block unmuted autoplay.
+            // videoElement.muted = false; // This might cause feedback or double audio. Keep muted in UI, stream takes track directly.
+            
+            try {
+                await videoElement.play();
+                processVideoFrame();
+            } catch (err) {
+                console.error("Video play error", err);
+                showStatus("動画の再生に失敗しました。", "error");
+                mediaRecorder.stop();
+            }
+            
+            // Stop when video ends
+            videoElement.onended = () => {
+                if (mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+            };
+        }
+
+        async function processVideoFrame() {
+            if (!isVideoProcessing || videoElement.paused || videoElement.ended) return;
+
+            // 1. Draw current video frame
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+            // 2. Detect Faces
+            try {
+                // Using SSD MobileNet V1 with Lower Threshold (0.25)
+                const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.25 });
+                const detections = await faceapi.detectAllFaces(canvas, options); // Detect on the drawn canvas frame
+
+                if (detections.length > 0) {
+                    lastDetections = detections; // Update cache
+                }
+                
+                // Draw mosaic based on (fresh or cached) detections
+                const resultsToDraw = detections.length > 0 ? detections : [];
+                
+                resultsToDraw.forEach(det => {
+                    const { x, y, width, height } = det.box;
+                    applyMosaic(ctx, x, y, width, height, canvas);
+                });
+
+            } catch (e) {
+                console.log("Frame skip", e);
+            }
+
+            // Loop
+            requestAnimationFrame(processVideoFrame);
+        }
+
+        // --- Shared Helper Functions ---
+
+        function setupCanvasInDOM() {
+            if (!canvasContainer.contains(canvas)) {
+                canvasContainer.innerHTML = '';
+                canvasContainer.appendChild(selectionBox);
+                canvasContainer.appendChild(videoElement); // Keep video in DOM (hidden)
+                canvasContainer.appendChild(canvas);
+            }
+        }
+
         function drawImageToCanvas(img) {
             canvas.width = img.width;
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
         }
+        
+        function updateButtonStates() {
+            if (!isModelLoaded) return;
+            
+            if (currentMediaType === 'image' && originalImage) {
+                mosaicBtn.disabled = false;
+                manualModeBtn.disabled = false;
+            } else if (currentMediaType === 'video') {
+                startVideoBtn.disabled = false;
+            }
+        }
 
-        // --- Manual Mode Logic ---
+        function applyMosaic(context, x, y, w, h, sourceCanvas) {
+            x = Math.max(0, x);
+            y = Math.max(0, y);
+            w = Math.min(w, context.canvas.width - x);
+            h = Math.min(h, context.canvas.height - y);
+            
+            if (w <= 0 || h <= 0) return;
 
+            // モザイクの強度を上げました（より粗く、見えにくく）
+            // 旧: w * 0.08 (8%) -> 新: w * 0.15 (15%)
+            // 最小サイズも 8px -> 15px に変更
+            const pixelSize = Math.max(15, Math.floor(w * 0.15)); 
+            
+            // Create temp canvas
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            const wBlocks = Math.ceil(w / pixelSize);
+            const hBlocks = Math.ceil(h / pixelSize);
+            
+            tempCanvas.width = wBlocks;
+            tempCanvas.height = hBlocks;
+
+            tempCtx.imageSmoothingEnabled = false;
+            context.imageSmoothingEnabled = false;
+
+            // Use the sourceCanvas (which has the current frame) to extract the face
+            tempCtx.drawImage(sourceCanvas, x, y, w, h, 0, 0, wBlocks, hBlocks);
+            context.drawImage(tempCanvas, 0, 0, wBlocks, hBlocks, x, y, w, h);
+        }
+
+        // --- Manual Mode Logic (Same as before) ---
         function toggleManualMode() {
-            if (!originalImage) return;
+            if (currentMediaType !== 'image' || !originalImage) return;
             
             isManualMode = !isManualMode;
             isDrawing = false;
@@ -351,7 +702,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                     </svg>
-                    完了 (通常に戻る)
+                    完了
                 `;
                 canvasContainer.style.cursor = 'crosshair';
                 manualInstructions.classList.remove('hidden');
@@ -368,11 +719,10 @@
                 manualInstructions.classList.add('hidden');
             }
         }
-
+        
+        // ... (getPointerPos, startSelection, updateSelection, endSelection are same as before) ...
         function getPointerPos(e) {
-            // Get position relative to the Canvas Container (which holds the Canvas)
             const rect = canvasContainer.getBoundingClientRect();
-            
             let clientX, clientY;
             if (e.touches && e.touches.length > 0) {
                 clientX = e.touches[0].clientX;
@@ -381,23 +731,16 @@
                 clientX = e.clientX;
                 clientY = e.clientY;
             }
-
-            return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
-            };
+            return { x: clientX - rect.left, y: clientY - rect.top };
         }
 
         function startSelection(e) {
             if (!isManualMode) return;
-            // Ensure we clicked inside/on the canvas logic visually
             if (e.target !== canvas && e.target !== selectionBox) return;
-
             isDrawing = true;
             const pos = getPointerPos(e);
             startX = pos.x;
             startY = pos.y;
-
             selectionBox.style.left = startX + 'px';
             selectionBox.style.top = startY + 'px';
             selectionBox.style.width = '0px';
@@ -407,14 +750,11 @@
 
         function updateSelection(e) {
             if (!isManualMode || !isDrawing) return;
-            
             const pos = getPointerPos(e);
             const currentX = pos.x;
             const currentY = pos.y;
-
             const width = currentX - startX;
             const height = currentY - startY;
-
             selectionBox.style.width = Math.abs(width) + 'px';
             selectionBox.style.height = Math.abs(height) + 'px';
             selectionBox.style.left = (width < 0 ? currentX : startX) + 'px';
@@ -423,18 +763,9 @@
 
         function endSelection(e) {
             if (!isManualMode || !isDrawing) return;
-            
             isDrawing = false;
             selectionBox.style.display = 'none';
-
-            // Calculate final rectangle relative to Canvas resolution
-            // The canvas is displayed with CSS max-width: 100%, so we need to map
-            // screen coordinates to actual canvas pixel coordinates.
-            
-            // Get visually rendered size of canvas
             const rect = canvas.getBoundingClientRect();
-            
-            // Pointer position at end (handle MouseUp vs TouchEnd)
             let clientX, clientY;
             if (e.changedTouches && e.changedTouches.length > 0) {
                 clientX = e.changedTouches[0].clientX;
@@ -443,109 +774,25 @@
                 clientX = e.clientX;
                 clientY = e.clientY;
             }
-
-            // Calculate end pos relative to canvas element
             const endXRel = clientX - rect.left;
             const endYRel = clientY - rect.top;
-            
-            // Calculate start pos relative to canvas element (from stored container coords)
-            // We need to re-calculate start relative to the canvas rect specifically
             const containerRect = canvasContainer.getBoundingClientRect();
-            // StartX was relative to container. 
-            // Canvas is usually centered or fills container. 
-            // Better strategy: map container coords to canvas coords.
-            
             const canvasOffsetX = rect.left - containerRect.left;
             const canvasOffsetY = rect.top - containerRect.top;
-
             const startXRel = startX - canvasOffsetX;
             const startYRel = startY - canvasOffsetY;
-
-            // Scaling factors
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-
             const finalX = Math.min(startXRel, endXRel) * scaleX;
             const finalY = Math.min(startYRel, endYRel) * scaleY;
             const finalW = Math.abs(endXRel - startXRel) * scaleX;
             const finalH = Math.abs(endYRel - startYRel) * scaleY;
 
-            // Apply mosaic if area is large enough (avoid accidental tiny clicks)
             if (finalW > 5 && finalH > 5) {
-                applyMosaic(ctx, finalX, finalY, finalW, finalH);
+                applyMosaic(ctx, finalX, finalY, finalW, finalH, canvas);
                 downloadBtn.disabled = false;
                 showStatus("手動でモザイクを追加しました", "success");
             }
-        }
-
-        // --- AI Mosaic Logic ---
-
-        async function detectAndMosaicFaces() {
-            if (!isModelLoaded) {
-                showStatus("AIモデルがまだ読み込まれていません。", "error");
-                return;
-            }
-
-            showLoading(true, "顔を検出してモザイク処理中...");
-            
-            try {
-                // Using SSD MobileNet V1 + Landmarks for higher precision
-                // minConfidence 0.5 (was 0.3) to avoid huge false positives (backgrounds)
-                const results = await faceapi.detectAllFaces(
-                    canvas, 
-                    new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 })
-                ).withFaceLandmarks();
-
-                if (results.length === 0) {
-                    showStatus("顔が検出されませんでした。手動モードを試してください。", "warning");
-                    showLoading(false);
-                    return;
-                }
-
-                results.forEach(result => {
-                    const { x, y, width, height } = result.detection.box;
-                    applyMosaic(ctx, x, y, width, height);
-                });
-
-                showStatus(`${results.length} 人の顔にモザイクをかけました！`, "success");
-                downloadBtn.disabled = false;
-
-            } catch (err) {
-                console.error(err);
-                showStatus("処理中にエラーが発生しました。", "error");
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        function applyMosaic(context, x, y, w, h) {
-            // Adjust bounds to prevent drawing outside canvas or negative values
-            x = Math.max(0, x);
-            y = Math.max(0, y);
-            // Ensure width/height don't exceed canvas dimensions from x/y
-            w = Math.min(w, context.canvas.width - x);
-            h = Math.min(h, context.canvas.height - y);
-            
-            if (w <= 0 || h <= 0) return;
-
-            const pixelSize = Math.max(10, Math.floor(w * 0.1)); // Slightly larger pixels for better effect
-            
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            const wBlocks = Math.ceil(w / pixelSize);
-            const hBlocks = Math.ceil(h / pixelSize);
-            
-            tempCanvas.width = wBlocks;
-            tempCanvas.height = hBlocks;
-
-            tempCtx.imageSmoothingEnabled = false;
-            context.imageSmoothingEnabled = false;
-
-            // Draw just the face region to temp canvas (shrink)
-            tempCtx.drawImage(canvas, x, y, w, h, 0, 0, wBlocks, hBlocks);
-            // Draw back to main canvas (stretch)
-            context.drawImage(tempCanvas, 0, 0, wBlocks, hBlocks, x, y, w, h);
         }
 
         // --- UI Helper Functions ---
@@ -561,7 +808,7 @@
 
         function showStatus(msg, type) {
             statusMessage.textContent = msg;
-            statusMessage.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700', 'bg-blue-100', 'text-blue-700');
+            statusMessage.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700', 'bg-blue-100', 'text-blue-700', 'bg-gray-100', 'text-gray-700');
             
             if (type === 'error') {
                 statusMessage.classList.add('bg-red-100', 'text-red-700');
@@ -569,11 +816,60 @@
                 statusMessage.classList.add('bg-green-100', 'text-green-700');
             } else if (type === 'warning') {
                 statusMessage.classList.add('bg-yellow-100', 'text-yellow-700');
-            } else {
+            } else if (type === 'info') {
                 statusMessage.classList.add('bg-blue-100', 'text-blue-700');
+            } else {
+                statusMessage.classList.add('bg-gray-100', 'text-gray-700');
             }
         }
-
+        
+        // --- Promo Image Generation ---
+        function generatePromoImage() {
+            // (Same as before)
+            const pCanvas = document.createElement('canvas');
+            pCanvas.width = 1200;
+            pCanvas.height = 630;
+            const pCtx = pCanvas.getContext('2d');
+            const gradient = pCtx.createLinearGradient(0, 0, 1200, 630);
+            gradient.addColorStop(0, '#2563EB'); 
+            gradient.addColorStop(1, '#4F46E5'); 
+            pCtx.fillStyle = gradient;
+            pCtx.fillRect(0, 0, 1200, 630);
+            pCtx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            pCtx.beginPath();
+            pCtx.arc(1100, 50, 150, 0, Math.PI * 2); 
+            pCtx.fill();
+            pCtx.beginPath();
+            pCtx.arc(100, 580, 100, 0, Math.PI * 2); 
+            pCtx.fill();
+            pCtx.fillStyle = '#FFFFFF';
+            pCtx.textAlign = 'left';
+            pCtx.font = 'bold 64px "Noto Sans JP", sans-serif';
+            pCtx.fillText('全自動・顔モザイク', 80, 200);
+            pCtx.font = 'bold 40px "Noto Sans JP", sans-serif';
+            pCtx.fillText('その写真、そのままアップして大丈夫？', 80, 300); // Reverted text
+            pCtx.font = '32px "Noto Sans JP", sans-serif';
+            pCtx.fillText('✅ 超高精度AIが自動検出', 80, 380);
+            pCtx.fillText('✅ 手動補正で完璧カバー', 80, 440);
+            pCtx.fillText('🔒 サーバー送信なしで安心', 80, 500);
+            const svgElement = document.getElementById('heroSvg');
+            if (svgElement) {
+                const svgData = new XMLSerializer().serializeToString(svgElement);
+                const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                const url = URL.createObjectURL(svgBlob);
+                const img = new Image();
+                img.onload = () => {
+                    const scale = 2.5;
+                    pCtx.drawImage(img, 700, 100, 220 * scale, 180 * scale);
+                    const link = document.createElement('a');
+                    link.download = 'face_mosaic_promo.png';
+                    link.href = pCanvas.toDataURL('image/png');
+                    link.click();
+                    URL.revokeObjectURL(url);
+                };
+                img.src = url;
+            }
+        }
     </script>
 </body>
 </html>
